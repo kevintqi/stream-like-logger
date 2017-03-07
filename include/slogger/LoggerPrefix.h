@@ -28,46 +28,49 @@
 #include <ctime>
 
 namespace slogger {
-  
+
 enum LoggerLevel { ALWAYS, ERROR, INFO, DEBUG };
 
 class ILoggerPrefix {
 public:
-  virtual ~ILoggerPrefix() {}
-  virtual std::string operator()(LoggerLevel lv, const char *file, int line) = 0;
-  static const constexpr char *LEVEL = "AEID";
+    virtual ~ILoggerPrefix() {
+    }
+    virtual std::string operator()(LoggerLevel lv, const char *file, int line) = 0;
+    static const constexpr char *LEVEL = "AEID";
 };
 
 typedef std::shared_ptr<ILoggerPrefix> ILoggerPrefixPtr;
 
 class SignaturePrefix : public ILoggerPrefix {
 private:
-  std::string mSignature;
-  
+    std::string mSignature;
+
 public:
-  explicit SignaturePrefix(const std::string& signature = "") : mSignature(signature) {}
-  
-  std::string operator()(LoggerLevel lv, const char *file, int line) {
-      std::stringstream ss;
-      ss << mSignature << "[" << LEVEL[lv] << "]" << file << ":" << line << " ";
-      return std::move(ss.str());
-  }
+    explicit SignaturePrefix(const std::string &signature = "") : mSignature(signature) {
+    }
+
+    std::string operator()(LoggerLevel lv, const char *file, int line) {
+        std::stringstream ss;
+        ss << mSignature << "[" << LEVEL[lv] << "]" << file << ":" << line << " ";
+        return std::move(ss.str());
+    }
 };
 
 class TimedSignaturePrefix : public ILoggerPrefix {
 private:
-  SignaturePrefix mSignaturePrefix;
-  
+    SignaturePrefix mSignaturePrefix;
+
 public:
-  explicit TimedSignaturePrefix(const std::string& signature = "") : mSignaturePrefix(signature) {}
-  
-  std::string operator()(LoggerLevel lv, const char *file, int line) {
-      auto now = std::chrono::system_clock::now();
-      auto timeT = std::chrono::system_clock::to_time_t(now);
-      std::stringstream ss;
-      ss << timeT << " " << mSignaturePrefix(lv, file, line);
-      return std::move(ss.str());
-  }
+    explicit TimedSignaturePrefix(const std::string &signature = "") : mSignaturePrefix(signature) {
+    }
+
+    std::string operator()(LoggerLevel lv, const char *file, int line) {
+        auto now = std::chrono::system_clock::now();
+        auto timeT = std::chrono::system_clock::to_time_t(now);
+        std::stringstream ss;
+        ss << timeT << " " << mSignaturePrefix(lv, file, line);
+        return std::move(ss.str());
+    }
 };
 
 } /* namespace slogger */

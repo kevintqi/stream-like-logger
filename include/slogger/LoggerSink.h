@@ -29,51 +29,52 @@
 #include <syslog.h>
 
 namespace slogger {
-   
+
 class ILoggerSink {
 public:
-   virtual ~ILoggerSink() {}
-   virtual void flush(const std::string& str) = 0;
+    virtual ~ILoggerSink() {
+    }
+    virtual void flush(const std::string &str) = 0;
 };
 
 typedef std::shared_ptr<ILoggerSink> ILoggerSinkPtr;
 
-class StdOutSink : public ILoggerSink{
+class StdOutSink : public ILoggerSink {
 private:
-   std::mutex mMutex;
-   
+    std::mutex mMutex;
+
 public:
-   void flush(const std::string& str) {
-      std::lock_guard<std::mutex> lock(mMutex);
-      std::cout << str << std::endl;
-   }
+    void flush(const std::string &str) {
+        std::lock_guard<std::mutex> lock(mMutex);
+        std::cout << str << std::endl;
+    }
 };
 
-class FileLoggerSink : public ILoggerSink{
+class FileLoggerSink : public ILoggerSink {
 private:
-   std::mutex mMutex;
-   std::ofstream mFile;
-   
+    std::mutex mMutex;
+    std::ofstream mFile;
+
 public:
-   FileLoggerSink(const char *fileName): mFile(fileName, std::ofstream::app) {}
-   
-   void flush(const std::string& str) {
-      std::lock_guard<std::mutex> lock(mMutex);
-      mFile << str;
-      mFile.flush();
-   }
+    FileLoggerSink(const char *fileName) : mFile(fileName, std::ofstream::app) {
+    }
+
+    void flush(const std::string &str) {
+        std::lock_guard<std::mutex> lock(mMutex);
+        mFile << str;
+        mFile.flush();
+    }
 };
 
-class SyslogSink : public ILoggerSink{
+class SyslogSink : public ILoggerSink {
 public:
-   SyslogSink(const char *name) {
-      openlog(name, LOG_PID, LOG_USER);
-   }
-   
-   void flush(const std::string& str) {
-      syslog(LOG_CRIT, "%s", str.c_str());
-   }
-};
+    SyslogSink(const char *name) {
+        openlog(name, LOG_PID, LOG_USER);
+    }
 
+    void flush(const std::string &str) {
+        syslog(LOG_CRIT, "%s", str.c_str());
+    }
+};
 
 } /* namespace slogger */

@@ -28,79 +28,78 @@
 #include <vector>
 
 namespace slogger {
-  
+
 class Logger {
 private:
-  int mNumberofLoggerStreams;
-  LoggerLevel mLevel;
-  ILoggerPrefixPtr mPrefix;
-  ILoggerSinkPtr mSink;
-  std::vector<LoggerStreamPtr> mLoggerStreams;
-  LoggerStreamPtr mNullStream;
-  
-  void initLoggerStream() {
-      mLoggerStreams.clear();
-  if (mSink) {
-    for (int i = 0; i < mNumberofLoggerStreams; ++i) {
-      mLoggerStreams.push_back(LoggerStreamPtr(new LoggerStream(mSink)));
+    int mNumberofLoggerStreams;
+    LoggerLevel mLevel;
+    ILoggerPrefixPtr mPrefix;
+    ILoggerSinkPtr mSink;
+    std::vector<LoggerStreamPtr> mLoggerStreams;
+    LoggerStreamPtr mNullStream;
+
+    void initLoggerStream() {
+        mLoggerStreams.clear();
+        if (mSink) {
+            for (int i = 0; i < mNumberofLoggerStreams; ++i) {
+                mLoggerStreams.push_back(LoggerStreamPtr(new LoggerStream(mSink)));
+            }
+        }
     }
-  }
-  }
-  LoggerStreamPtr& availableLoggerStream() {
-      for(LoggerStreamPtr& strm : mLoggerStreams) {
-    if (strm && !strm->inUse()){
-      return strm;
+    LoggerStreamPtr &availableLoggerStream() {
+        for (LoggerStreamPtr &strm : mLoggerStreams) {
+            if (strm && !strm->inUse()) {
+                return strm;
+            }
+        }
+        return mNullStream;
     }
-  }
-  return mNullStream;
-  }
-  
+
 public:
-  Logger()  : mNumberofLoggerStreams(0), mLevel(LoggerLevel::INFO) {
-  }
-  
-  void configure(int numberOfLoggerStreams, ILoggerPrefixPtr prefix, ILoggerSinkPtr sink) {
-  mNumberofLoggerStreams = numberOfLoggerStreams;
-  mPrefix = prefix;
-  mSink = sink;
-  initLoggerStream();
-  }
-  
-  void setLevel(LoggerLevel lv) { mLevel = lv; }
-  
-  LoggerLevel level() const { return mLevel; }
+    Logger() : mNumberofLoggerStreams(0), mLevel(LoggerLevel::INFO) {
+    }
 
-  LoggerStreamPtr& prefixStream(LoggerLevel lv, const char* file, int line) {
-    	if (mLevel >= lv) {
-	  return availableLoggerStream() << (*mPrefix)(lv, file, line);
-	} else {
-		return mNullStream;
-	}
-  }
+    void configure(int numberOfLoggerStreams, ILoggerPrefixPtr prefix, ILoggerSinkPtr sink) {
+        mNumberofLoggerStreams = numberOfLoggerStreams;
+        mPrefix = prefix;
+        mSink = sink;
+        initLoggerStream();
+    }
 
-  LoggerStreamPtr& stream(LoggerLevel lv) {
-     	if (mLevel >= lv) {
-	  return availableLoggerStream();
-	} else {
-		return mNullStream;
-	} 
-  }
+    void setLevel(LoggerLevel lv) {
+        mLevel = lv;
+    }
 
+    LoggerLevel level() const {
+        return mLevel;
+    }
+
+    LoggerStreamPtr &prefixStream(LoggerLevel lv, const char *file, int line) {
+        if (mLevel >= lv) {
+            return availableLoggerStream() << (*mPrefix)(lv, file, line);
+        } else {
+            return mNullStream;
+        }
+    }
+
+    LoggerStreamPtr &stream(LoggerLevel lv) {
+        if (mLevel >= lv) {
+            return availableLoggerStream();
+        } else {
+            return mNullStream;
+        }
+    }
 };
 
-static Logger& theLogger() {
-  static Logger instance;
-  return instance;
+static Logger &theLogger() {
+    static Logger instance;
+    return instance;
 }
 
-#define ALWAYS_LOG                                                             \
-  theLogger().prefixStream(LoggerLevel::ALWAYS, __FILE__, __LINE__)
-#define ERROR_LOG                                                              \
-  theLogger().prefixStream(LoggerLevel::ERROR, __FILE__, __LINE__)
-#define INFO_LOG                                                               \
-  theLogger().prefixStream(LoggerLevel::INFO, __FILE__, __LINE__)
-#define DEBUG_LOG                                                              \
-  theLogger().prefixStream(LoggerLevel::DEBUG, __FILE__, __LINE__)
+#define ALWAYS_LOG theLogger().prefixStream(LoggerLevel::ALWAYS, __FILE__, __LINE__)
+#define ERROR_LOG theLogger().prefixStream(LoggerLevel::ERROR, __FILE__, __LINE__)
+#define INFO_LOG theLogger().prefixStream(LoggerLevel::INFO, __FILE__, __LINE__)
+#define DEBUG_LOG theLogger().prefixStream(LoggerLevel::DEBUG, __FILE__, __LINE__)
 #define LOG_EL LoggerStreamFlush::end()
 
 } /* namespace slogger */

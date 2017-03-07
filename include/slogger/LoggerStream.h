@@ -49,7 +49,7 @@ private:
     friend LoggerStreamPtr &operator<<(LoggerStreamPtr &log, std::ostream &os);
     friend LoggerStreamPtr &operator<<(LoggerStreamPtr &logStrm, const std::string &str);
     friend LoggerStreamPtr &operator<<(LoggerStreamPtr &logStrm, int number);
-        friend LoggerStreamPtr &operator<<(LoggerStreamPtr &logStrm, double number);
+    friend LoggerStreamPtr &operator<<(LoggerStreamPtr &logStrm, double number);
     friend LoggerStreamPtr &operator<<(LoggerStreamPtr &logStrm, const LoggerStreamFlush &el);
 
     void flush() {
