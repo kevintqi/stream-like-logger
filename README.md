@@ -6,7 +6,7 @@ The stream-like-logger is a C++ logger utility uses iostream like interfaces.
 INFO_LOG << " 1 + 1 = " << 2 << LOG_EL;
 ERROR_LOG << "Something is very wrong!" << LOG_EL;
 ```
-One possible log meesage for the code might be
+Possible log meesages for the code might be
 ```log
 1488492126 my_module[I]main.cpp:8 1 + 1 = 2
 1488492126 my_module[E]main.cpp:9 Something is very wrong!
@@ -38,6 +38,7 @@ There are sample implementation included
 * `StdOutSink`
 * `FileLoggerSink`
 * `SyslogSink`
+
 Remove them if they don't fit your need.
 
 ## Sample Usage
