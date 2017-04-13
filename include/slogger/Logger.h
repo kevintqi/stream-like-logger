@@ -24,6 +24,7 @@
 #include "LoggerStream.h"
 #include "LoggerPrefix.h"
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -32,13 +33,15 @@ namespace slogger {
 class Logger {
 private:
     int mNumberofLoggerStreams;
-    LoggerLevel mLevel;
+    int mLevel;
     ILoggerPrefixPtr mPrefix;
     ILoggerSinkPtr mSink;
+    std::mutex mMutex;
     std::vector<LoggerStreamPtr> mLoggerStreams;
     LoggerStreamPtr mNullStream;
 
     void initLoggerStream() {
+        std::lock_guard<std::mutex> lock(mMutex);
         mLoggerStreams.clear();
         if (mSink) {
             for (int i = 0; i < mNumberofLoggerStreams; ++i) {
@@ -47,6 +50,7 @@ private:
         }
     }
     LoggerStreamPtr &availableLoggerStream() {
+        std::lock_guard<std::mutex> lock(mMutex);
         for (LoggerStreamPtr &strm : mLoggerStreams) {
             if (strm && !strm->inUse()) {
                 return strm;
@@ -66,15 +70,18 @@ public:
         initLoggerStream();
     }
 
-    void setLevel(LoggerLevel lv) {
+    void setLevel(int lv) {
         mLevel = lv;
     }
 
-    LoggerLevel level() const {
+    int level() const {
         return mLevel;
     }
 
     LoggerStreamPtr &prefixStream(LoggerLevel lv, const char *file, int line) {
+        if (!mPrefix) {
+            return stream(lv);
+        }
         if (mLevel >= lv) {
             return availableLoggerStream() << (*mPrefix)(lv, file, line);
         } else {
@@ -91,7 +98,7 @@ public:
     }
 };
 
-static Logger &theLogger() {
+inline Logger &theLogger() {
     static Logger instance;
     return instance;
 }

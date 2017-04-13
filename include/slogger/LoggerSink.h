@@ -68,7 +68,7 @@ public:
 
 class SyslogSink : public ILoggerSink {
 public:
-    SyslogSink(const char *name) {
+    SyslogSink(const char *name = nullptr) {
         openlog(name, LOG_PID, LOG_USER);
     }
 
